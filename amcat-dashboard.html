@@ -1,0 +1,712 @@
+!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AMCAT Quant Practice Dashboard</title>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f7f6f2;--surf:#fff;--surf2:#f3f0ec;--border:#ddd9d1;--text:#1e1c17;--muted:#6b6861;--faint:#b5b3ae;--primary:#01696f;--primaryH:#0a4e53;--primaryBg:#d8eeec;--success:#3a7318;--successBg:#dff0d4;--error:#a3113a;--errorBg:#f9dde5;--orange:#c86400;--blue:#005d8a;--purple:#6c32b0;--gold:#b88700;--radius:14px;--radiusSm:8px;--shadow:0 2px 12px rgba(0,0,0,.07);--shadowMd:0 6px 24px rgba(0,0,0,.10);--font:'Satoshi',system-ui,sans-serif;--transition:180ms cubic-bezier(.16,1,.3,1)}
+[data-theme=dark]{--bg:#131210;--surf:#1a1917;--surf2:#212019;--border:#302e2b;--text:#e0ddd7;--muted:#9a9793;--faint:#555350;--primary:#3d9098;--primaryH:#1e7880;--primaryBg:#1e3436;--success:#5a9e38;--successBg:#1a2f12;--error:#d44d6f;--errorBg:#2d1018;--shadow:0 2px 12px rgba(0,0,0,.3);--shadowMd:0 6px 24px rgba(0,0,0,.45)}
+*{box-sizing:border-box;margin:0;padding:0} html{scroll-behavior:smooth} body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100dvh;font-size:1rem;line-height:1.55;-webkit-font-smoothing:antialiased}
+.shell{display:grid;grid-template-columns:260px 1fr;height:100dvh;overflow:hidden}
+.sidebar{background:var(--surf);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;overscroll-behavior:contain;padding:20px 12px}
+.main{overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 20px}
+.logo{width:38px;height:38px;border-radius:10px;background:var(--primaryBg);display:grid;place-items:center;color:var(--primary);flex-shrink:0}
+.brand-text h1{font-size:.95rem;font-weight:700;line-height:1.2} .brand-text p{font-size:.72rem;color:var(--muted)}
+.nav-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.09em;color:var(--faint);padding:16px 8px 6px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radiusSm);cursor:pointer;font-size:.875rem;color:var(--muted);border:none;background:none;width:100%;text-align:left;transition:background var(--transition),color var(--transition);min-height:44px}
+.nav-item:hover{background:var(--surf2);color:var(--text)}
+.nav-item.active{background:var(--primaryBg);color:var(--primary);font-weight:600}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
+.nav-count{margin-left:auto;font-size:.7rem;background:var(--surf2);padding:2px 7px;border-radius:20px;color:var(--muted)}
+.nav-item.active .nav-count{background:var(--primary);color:#fff}
+.topbar{display:flex;align-items:center;gap:12px;padding:14px 28px;border-bottom:1px solid var(--border);background:var(--surf);position:sticky;top:0;z-index:20}
+.topbar h2{font-size:1rem;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;padding:14px 28px 0}
+.chip{padding:5px 14px;border-radius:20px;font-size:.75rem;font-weight:500;border:1.5px solid var(--border);background:var(--surf2);cursor:pointer;transition:all var(--transition)}
+.chip.active{background:var(--primaryBg);border-color:var(--primary);color:var(--primary)}
+.content-body{padding:20px 28px 40px;display:flex;flex-direction:column;gap:20px}
+.kpi-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kpi{background:var(--surf);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
+.kpi-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.kpi-val{font-size:2rem;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1;margin:4px 0 2px;color:var(--text)}
+.kpi-badge{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:600;padding:3px 10px;border-radius:20px;margin-top:6px}
+.badge-up{background:var(--successBg);color:var(--success)} .badge-down{background:var(--errorBg);color:var(--error)} .badge-neutral{background:var(--surf2);color:var(--muted)}
+.row2{display:grid;grid-template-columns:1fr 340px;gap:20px}
+.panel{background:var(--surf);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.panel-head{padding:16px 20px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.panel-head h3{font-size:.95rem;font-weight:700} .panel-head p{font-size:.75rem;color:var(--muted);margin-top:3px}
+.panel-body{padding:16px 20px 20px}
+.q-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.badge{padding:4px 11px;border-radius:20px;font-size:.72rem;font-weight:600}
+.badge-level{background:var(--surf2);color:var(--muted)}
+.badge-time{background:#fff8e6;color:#a06a00;border:1.5px solid #e8c84a}
+[data-theme=dark] .badge-time{background:#2c2200;color:#e0a800;border-color:#5a4500}
+.badge-type{background:var(--primaryBg);color:var(--primary)}
+.badge-mod{background:#eef2ff;color:#4b5ec0}
+[data-theme=dark] .badge-mod{background:#1a1d38;color:#8898ff}
+.q-progress{height:5px;background:var(--surf2);border-radius:4px;margin-bottom:16px;overflow:hidden}
+.q-progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--blue, #005d8a));border-radius:4px;transition:width .5s ease}
+.q-text{font-size:1rem;font-weight:600;line-height:1.55;margin-bottom:18px;color:var(--text)}
+.options{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:13px;padding:13px 16px;border-radius:10px;border:1.5px solid var(--border);background:var(--surf2);cursor:pointer;transition:all var(--transition);font-size:.9rem;min-height:48px}
+.opt:hover:not(.disabled){border-color:var(--primary);background:var(--primaryBg)}
+.opt.selected{border-color:var(--primary);background:var(--primaryBg)}
+.opt.correct{border-color:var(--success)!important;background:var(--successBg)!important}
+.opt.wrong{border-color:var(--error)!important;background:var(--errorBg)!important}
+.opt.disabled{cursor:default;pointer-events:none}
+.opt-circle{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:grid;place-items:center;font-size:.72rem;font-weight:700;flex-shrink:0;transition:all var(--transition)}
+.opt.selected .opt-circle,.opt.correct .opt-circle{border-color:var(--primary);background:var(--primary);color:#fff}
+.opt.wrong .opt-circle{border-color:var(--error);background:var(--error);color:#fff}
+.q-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.btn{min-height:42px;padding:0 18px;border-radius:var(--radiusSm);border:1.5px solid var(--border);background:var(--surf2);font-family:var(--font);font-size:.85rem;font-weight:600;cursor:pointer;transition:all var(--transition);display:inline-flex;align-items:center;gap:7px}
+.btn:hover{border-color:var(--primary);color:var(--primary)}
+.btn-primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primaryH);border-color:var(--primaryH);color:#fff}
+.btn-skip{color:var(--muted)}
+.solution-box{margin-top:16px;padding:16px;border-radius:10px;background:var(--surf2);border-left:3px solid var(--primary);display:none;font-size:.88rem;line-height:1.65}
+.solution-box.show{display:block}
+.solution-box strong{color:var(--primary);display:block;margin-bottom:6px;font-size:.82rem;text-transform:uppercase;letter-spacing:.05em}
+.snap-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:.85rem}
+.snap-row:last-child{border:0}
+.snap-val{font-weight:700;font-variant-numeric:tabular-nums}
+.playbook-card{margin-top:14px;padding:14px;border-radius:10px;background:var(--primaryBg);border-left:3px solid var(--primary);font-size:.82rem;line-height:1.6}
+.playbook-card strong{display:block;color:var(--primary);margin-bottom:4px;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em}
+.trap-card{margin-top:10px;padding:14px;border-radius:10px;background:#fff8e6;border-left:3px solid var(--orange);font-size:.82rem;line-height:1.6}
+[data-theme=dark] .trap-card{background:#1f1800}
+.trap-card strong{color:var(--orange);display:block;margin-bottom:4px;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em}
+.row3{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.bar-item{margin-bottom:14px}
+.bar-label{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-bottom:5px}
+.bar-track{height:9px;background:var(--surf2);border-radius:5px;overflow:hidden}
+.bar-fill{height:100%;border-radius:5px;transition:width .8s ease}
+.coach-row{padding:12px;border-radius:10px;background:var(--surf2);margin-bottom:10px;font-size:.83rem;line-height:1.55}
+.coach-row:last-child{margin:0}
+.coach-row .tag{font-weight:700;color:var(--primary)}
+.tbl{width:100%;border-collapse:collapse;font-size:.82rem}
+.tbl th{padding:9px 10px;text-align:left;font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border)}
+.tbl td{padding:10px;border-bottom:1px solid var(--surf2)}
+.tbl tr:last-child td{border:0}
+.tag-correct{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:700;background:var(--successBg);color:var(--success)}
+.tag-wrong{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:700;background:var(--errorBg);color:var(--error)}
+.tag-skip{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:700;background:var(--surf2);color:var(--muted)}
+.timer-big{font-size:1.1rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--primary)}
+.timer-warn{color:var(--error)}
+.toast{position:fixed;bottom:28px;right:28px;padding:12px 22px;border-radius:10px;font-size:.85rem;font-weight:600;z-index:100;opacity:0;transform:translateY(12px);pointer-events:none;transition:all .3s ease;box-shadow:var(--shadowMd)}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast-correct{background:var(--success);color:#fff} .toast-wrong{background:var(--error);color:#fff} .toast-skip{background:var(--muted);color:#fff}
+@media(max-width:1100px){.kpi-bar{grid-template-columns:repeat(2,1fr)}.row2{grid-template-columns:1fr}.row3{grid-template-columns:1fr}}
+@media(max-width:760px){.shell{grid-template-columns:1fr;height:auto}.sidebar{display:none;position:fixed;inset:0 auto 0 0;width:280px;z-index:50;box-shadow:var(--shadowMd)}.sidebar.open{display:flex}.mob-menu{display:inline-flex!important}}
+.sr-only{position:absolute;width:1px;height:1px;clip:rect(0,0,0,0)} .empty-row{color:var(--faint);font-size:.82rem;padding:18px 0;text-align:center}
+
+/* KPI hover lift */
+.kpi {
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadowMd);
+}
+
+/* Animated shimmer on progress bar */
+.q-progress-fill {
+  position: relative;
+}
+.q-progress-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0.25),
+    transparent 40%,
+    transparent 60%,
+    rgba(255,255,255,0.25)
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+  opacity: 0.55;
+}
+@keyframes shimmer {
+  0% { background-position: -100% 0; }
+  100% { background-position: 100% 0; }
+}
+
+/* Smooth option hover lift */
+.opt:hover:not(.disabled) {
+  transform: translateY(-1px);
+}
+
+/* Motivational banner */
+.motiv-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 28px 6px;
+  background: linear-gradient(90deg, var(--primaryBg) 0%, transparent 100%);
+  border-bottom: 1px solid var(--border);
+  font-size: .78rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.motiv-bar .motiv-lead {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: .82rem;
+}
+
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M16.9 16.9L21 21"/><path d="M11 8v6M8 11h6"/></svg></div>
+    <div class="brand-text"><h1>QTrack AMCAT</h1><p>Adaptive quant lab</p></div>
+  </div>
+  <div class="nav-label">Quant Topics</div>
+  <div id="topicNav"></div>
+  <div class="nav-label" style="margin-top:8px">AMCAT Modules</div>
+  <div id="moduleNav"></div>
+</aside>
+
+<div class="main" id="mainScroll">
+  <div class="topbar">
+    <button class="btn mob-menu" style="display:none" id="mobMenu" aria-label="Menu">☰</button>
+    <h2 id="topbarTitle">AMCAT Quant Practice Dashboard</h2>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+      <span class="timer-big" id="timerDisplay">00:00</span>
+      <button class="btn" id="themeBtn" title="Toggle theme">🌙</button>
+      <button class="btn" id="resetBtn">Reset</button>
+      <button class="btn btn-primary" id="nextTopicBtn">Next topic →</button>
+    </div>
+  </div>
+
+  <div class="motiv-bar">
+    <span class="motiv-lead">💡 Every question you solve is one step closer to cracking AMCAT.</span>
+    <span>⏱️ Don't rush the timer — focus on clean logic, the speed will follow.</span>
+    <span>🔁 Mistakes are just feedback telling you where to sharpen your edge.</span>
+  </div>
+
+  <div class="chip-row">
+    <span class="chip active" data-diff="all">All levels</span>
+    <span class="chip" data-diff="1">Level 1</span>
+    <span class="chip" data-diff="2">Level 2</span>
+    <span class="chip" data-diff="3">Level 3 ★</span>
+    <span class="chip" data-diff="4">Level 4 ★★</span>
+    <span class="chip" data-diff="5">Level 5 ★★★</span>
+  </div>
+
+  <div class="content-body">
+    <div class="kpi-bar">
+      <div class="kpi"><div class="kpi-label">Overall accuracy</div><div class="kpi-val" id="kpiAcc">0%</div><div class="kpi-badge badge-neutral" id="kpiAccBadge">No attempts yet</div></div>
+      <div class="kpi"><div class="kpi-label">Questions solved</div><div class="kpi-val" id="kpiSolved">0</div><div class="kpi-badge badge-neutral" id="kpiAvgTime">Avg time –</div></div>
+      <div class="kpi"><div class="kpi-label">Correct streak</div><div class="kpi-val" id="kpiStreak">0</div><div class="kpi-badge badge-up" id="kpiLevel">Adaptive L1</div></div>
+      <div class="kpi"><div class="kpi-label">Weakest topic</div><div class="kpi-val" id="kpiWeak">–</div><div class="kpi-badge badge-down" id="kpiWeakSub">Needs data</div></div>
+    </div>
+
+    <div class="row2">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3 id="qTopicName">Topic</h3><p id="qTopicSub">Practice mode</p></div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:.75rem;color:var(--muted)" id="qCounter">Q 1 / 50</div>
+            <div style="font-size:.7rem;color:var(--muted);margin-top:2px" id="qDiffLabel">Level 1</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="q-progress"><div class="q-progress-fill" id="qProgress"></div></div>
+          <div class="q-meta" id="qMeta"></div>
+          <div class="q-text" id="qText"></div>
+          <div class="options" id="qOptions"></div>
+          <div class="q-actions">
+            <button class="btn btn-primary" id="submitBtn" disabled>Check answer</button>
+            <button class="btn" id="solBtn">Show solution</button>
+            <button class="btn btn-skip" id="skipBtn">Skip →</button>
+            <button class="btn" id="nextBtn">Next question →</button>
+          </div>
+          <div class="solution-box" id="solBox"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><div><h3>Topic snapshot</h3><p>Live stats & strategy</p></div></div>
+        <div class="panel-body">
+          <div id="snapStats"></div>
+          <div class="playbook-card" id="playbookCard"></div>
+          <div class="trap-card" id="trapCard"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row3">
+      <div class="panel">
+        <div class="panel-head"><div><h3>Performance by topic</h3><p>Accuracy across all practice topics</p></div></div>
+        <div class="panel-body"><canvas id="topicChart" height="180"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div><h3>Module readiness</h3><p>Technical & non-technical modules</p></div></div>
+        <div class="panel-body" id="moduleBars"></div>
+      </div>
+    </div>
+
+    <div class="row3">
+      <div class="panel">
+        <div class="panel-head"><div><h3>Recent attempts</h3><p>Last 12 questions across all topics</p></div></div>
+        <div class="panel-body" style="padding-top:8px"><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Topic</th><th>Difficulty</th><th>Result</th><th>Time</th></tr></thead><tbody id="recentTbody"></tbody></table></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div><h3>Coach insights</h3><p>Personalised next-step advice</p></div></div>
+        <div class="panel-body" id="coachPanel"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Disable console output in production
+console.log = function(){};
+console.debug = function(){};
+console.info = function(){};
+console.warn = function(){};
+
+const TOPICS = [
+  {
+    id:'tsd', title:'Time, Speed & Distance', priority:1,
+    playbook:'Priority topic. Focus on fixed-distance speed inversion, average-speed harmonic trap, and relative speed in opposite/same direction.',
+    trap:'Average speed is NOT (a+b)/2 for equal distances. Always use harmonic mean: 2ab/(a+b).',
+    questions:[
+      {q:'A train reaches its destination on time at 60 km/h. At 50 km/h it arrives 15 minutes late. Find the journey length.',opts:['75 km','60 km','90 km','50 km'],ans:'75 km',lvl:3,t:90,sol:'Let on-time duration = t hours. Same distance: 60t = 50(t + 1/4). So 10t = 12.5, t = 1.25 h. Distance = 60 × 1.25 = 75 km.'},
+      {q:'A car covers 240 km in 4 hours. Find its speed in km/h.',opts:['55 km/h','60 km/h','65 km/h','50 km/h'],ans:'60 km/h',lvl:3,t:45,sol:'Speed = Distance ÷ Time = 240 ÷ 4 = 60 km/h.'},
+      {q:'Two cyclists start from the same point in opposite directions at 18 km/h and 12 km/h. How far apart are they after 2 hours?',opts:['54 km','60 km','48 km','42 km'],ans:'60 km',lvl:3,t:60,sol:'Relative speed (opposite) = 18 + 12 = 30 km/h. Distance = 30 × 2 = 60 km.'},
+      {q:'A boat travels 30 miles downstream and 30 miles upstream. Speed in still water is 15 mph, total time is 4.5 hours. Find river speed.',opts:['5 mph','4 mph','6 mph','3 mph'],ans:'5 mph',lvl:4,t:105,sol:'Let river speed = x. 30/(15+x) + 30/(15−x) = 4.5 → 900/(225−x²) = 4.5 → x² = 25 → x = 5 mph.'},
+      {q:'The ratio between the speeds of two trains is 5:3. If the first train runs 350 km in 2 hours, what is the speed of the second train?',opts:['105 km/h','115 km/h','120 km/h','95 km/h'],ans:'105 km/h',lvl:3,t:55,sol:'Speed of the first train = 350/2 = 175 km/h. Since the speed ratio is 5:3, one part = 175/5 = 35. Therefore speed of the second train = 3 × 35 = 105 km/h.'},
+      {q:'A train travelling at 60 km/h catches another train moving in the same direction and leaves it 120 m behind in 18 seconds. Find the speed of the second train.',opts:['36 km/h','30 km/h','40 km/h','24 km/h'],ans:'36 km/h',lvl:5,t:80,sol:'Relative speed = distance/time = 120/18 = 20/3 m/s. Converting to km/h gives (20/3) × 18/5 = 24 km/h. Since both move in the same direction, 60 − speed of second train = 24, so the second train moves at 36 km/h.'},
+      {q:'A train 200 m long passes a pole in 20 seconds. Find its speed in km/h.',opts:['36 km/h','40 km/h','45 km/h','30 km/h'],ans:'36 km/h',lvl:4,t:60,sol:'Speed = 200/20 = 10 m/s = 10 × 18/5 = 36 km/h.'},
+      {q:'A person covers half the distance at 40 km/h and the remaining half at 60 km/h. Find the average speed for the whole journey.',opts:['48 km/h','50 km/h','45 km/h','52 km/h'],ans:'48 km/h',lvl:5,t:75,sol:'Average speed for equal distances = 2ab/(a+b) = 2×40×60/(40+60) = 4800/100 = 48 km/h.'}
+    ]
+  },
+  {
+    id:'hcf', title:'HCF and LCM', priority:2,
+    playbook:'Write ratio numbers as ax and bx where x = HCF (since gcd of the ratio is 1). Use HCF × LCM = product of two numbers.',
+    trap:'Students take ratio values directly as the numbers. Always introduce the common factor x.',
+    questions:[
+      {q:'Two numbers are in the ratio 4:5 and their LCM is 520. Find their HCF.',opts:['26','20','13','52'],ans:'26',lvl:3,t:80,sol:'Let numbers = 4x and 5x. HCF = x. Product = 20x². HCF × LCM = product → x × 520 = 20x² → x = 26.'},
+      {q:'Find the LCM of 147/64 and 30/44.',opts:['735/2','1470/44','735/44','1470/4'],ans:'735/2',lvl:4,t:95,sol:'LCM of fractions = LCM(numerators)/HCF(denominators). LCM(147,30)=1470, HCF(64,44)=4. Answer = 1470/4 = 735/2.'},
+      {q:'The HCF and LCM of two numbers are 5 and 120 respectively and their sum is 55. Find the two numbers.',opts:['15 and 40','10 and 45','20 and 35','25 and 30'],ans:'15 and 40',lvl:5,t:95,sol:'Let numbers = 5a and 5b, gcd(a,b)=1. 5ab=120 → ab=24. 5a+5b=55 → a+b=11. Co-prime factor pairs of 24 summing to 11: (3,8). Numbers = 15 and 40.'},
+      {q:'Find the HCF of 48 and 72.',opts:['12','24','8','36'],ans:'24',lvl:2,t:50,sol:'72 = 48×1 + 24; 48 = 24×2 + 0. HCF = 24.'},
+      {q:'The LCM of two numbers is 180 and their HCF is 6. If one number is 30, find the other.',opts:['36','42','30','18'],ans:'36',lvl:3,t:65,sol:'Product = HCF × LCM = 6 × 180 = 1080. Other number = 1080 / 30 = 36.'}
+    ]
+  },
+  {
+    id:'pl', title:'Profit and Loss', priority:1,
+    playbook:'Assume CP = 100 whenever only percentages matter. Translate words to CP–SP relationships immediately before calculating.',
+    trap:'Applying profit % on SP instead of CP, or mishandling successive changes.',
+    questions:[
+      {q:'A customer is charged Rs 600 for construction work. Three-fifths is spent on materials, and one-fifth of the remaining is spent on travel. How much is left?',opts:['Rs 192','Rs 200','Rs 180','Rs 240'],ans:'Rs 192',lvl:3,t:70,sol:'Materials = 3/5 × 600 = 360. Remaining = 240. Travel = 1/5 × 240 = 48. Left = 600 − 360 − 48 = 192.'},
+      {q:'If the selling price of a watch is halved, the profit becomes one-fourth of the original. Find the original profit percentage.',opts:['200%','100%','150%','250%'],ans:'200%',lvl:4,t:90,sol:'Let CP=100, profit=p. New SP=(100+p)/2, new profit=p/4 → (100+p)/2 = 100+p/4 → 200+2p=400+p → p=200.'},
+      {q:'A shopkeeper offers two successive discounts of 20% and 10% on MP Rs 1000. Find the selling price and equivalent single discount.',opts:['Rs 720, 28%','Rs 700, 30%','Rs 720, 30%','Rs 800, 20%'],ans:'Rs 720, 28%',lvl:5,t:75,sol:'After 20%: 1000×0.8=800. After 10%: 800×0.9=720. Equivalent discount=(1000−720)/1000=28%.'},
+      {q:'Which is better for a customer: a successive discount of 40% and 30%, or a flat discount of 70%?',opts:['Flat 70%','Successive 40% and 30%','Both are same','Cannot be determined'],ans:'Flat 70%',lvl:3,t:55,sol:'Effective discount of 40% and 30% = 40 + 30 − (40×30)/100 = 58%. Since 70% is greater than 58%, the flat 70% discount is better.'},
+      {q:'A can contains liquids A and B in the ratio 7:5. When 9 liters of the mixture are removed and replaced by B, the ratio becomes 7:9. How many liters of A were initially in the can?',opts:['21 liters','18 liters','24 liters','28 liters'],ans:'21 liters',lvl:5,t:95,sol:'Let total volume be V. Initial A = 7/12 V. After removing 9 L of the mixture, A left = (7/12)(V−9). Final ratio 7:9 means final A = 7/16 V. Equate: (7/12)(V−9) = (7/16)V. Solving gives V = 36, so initial A = (7/12)×36 = 21 liters.'},
+      {q:'A trader sells goods at a 25% profit. If CP is Rs 400, find SP.',opts:['Rs 500','Rs 480','Rs 520','Rs 450'],ans:'Rs 500',lvl:2,t:40,sol:'SP = CP × (1 + 25/100) = 400 × 1.25 = Rs 500.'},
+      {q:'An item is sold for Rs 340 at a 15% loss. Find the cost price.',opts:['Rs 400','Rs 380','Rs 420','Rs 360'],ans:'Rs 400',lvl:3,t:65,sol:'SP = CP × (1 − 15/100) → 340 = CP × 0.85 → CP = 340/0.85 = Rs 400.'}
+    ]
+  },
+  {
+    id:'prob', title:'Probability', priority:2,
+    playbook:'Use complement for "at least one" / "none" cases. For independent events multiply; for mutually exclusive events add.',
+    trap:'Counting favorable outcomes correctly but using the wrong total sample space, especially with replacement vs without replacement.',
+    questions:[
+      {q:'A bag contains 3 red, 2 blue, and 5 green balls. One ball is drawn at random. What is the probability it is blue?',opts:['1/5','1/4','2/5','1/10'],ans:'1/5',lvl:3,t:45,sol:'Total = 10. Blue = 2. P = 2/10 = 1/5.'},
+      {q:'A system fails only when overheating and cooling failure happen together. Their independent probabilities are 0.15 and 0.11. Find P(both fail).',opts:['0.0165','0.26','0.04','0.015'],ans:'0.0165',lvl:4,t:55,sol:'Independent events: P(both) = 0.15 × 0.11 = 0.0165.'},
+      {q:'What is the probability that a number chosen randomly from 1 to 249 is co-prime to 249?',opts:['164/249','85/249','83/249','166/249'],ans:'164/249',lvl:5,t:95,sol:'249 = 3 × 83. Non-coprime count (inclusion-exclusion) = ⌊249/3⌋ + ⌊249/83⌋ − 1 = 83+3−1 = 85. Coprime count = 249−85 = 164. P = 164/249.'},
+      {q:'Two fair dice are rolled. What is the probability that the sum is 8?',opts:['5/36','6/36','4/36','7/36'],ans:'5/36',lvl:4,t:60,sol:'Pairs summing to 8: (2,6),(3,5),(4,4),(5,3),(6,2) = 5 outcomes. P = 5/36.'},
+      {q:'A card is drawn from a standard deck of 52. What is the probability it is a king or a heart?',opts:['16/52','4/13','17/52','14/52'],ans:'4/13',lvl:3,t:55,sol:'Kings=4, Hearts=13, King of hearts counted once. P = (4+13−1)/52 = 16/52 = 4/13.'},
+      {q:'Ritu has 3 shirts in red shades, 4 in yellow, and 5 in green. Three shirts are picked one by one with replacement. What is the probability that all three are red?',opts:['1/64','1/16','1/12','3/64'],ans:'1/64',lvl:3,t:50,sol:'Total shirts = 12. Probability of red each time = 3/12 = 1/4. With replacement the draws are independent, so P(all red) = (1/4)^3 = 1/64.'},
+      {q:'Two dice are thrown simultaneously. Find the probability that the sum is greater than 7.',opts:['5/12','1/2','7/12','15/36'],ans:'5/12',lvl:5,t:60,sol:'Total outcomes = 36. Sum 7 occurs in 6 ways and the dice-sum distribution is symmetric, so sums greater than 7 occur in (36−6)/2 = 15 ways. Therefore probability = 15/36 = 5/12.'}
+    ]
+  },
+  {
+    id:'pc', title:'Permutation & Combination', priority:3,
+    playbook:'Label the problem first: SELECT (order irrelevant → C) or ARRANGE (order matters → P). With restrictions, solve unrestricted then subtract invalid.',
+    trap:'Treating arrangement and selection as the same thing.',
+    questions:[
+      {q:'In how many ways can 5 students be selected from 8 students?',opts:['56','40','60','70'],ans:'56',lvl:3,t:60,sol:'Order does not matter → combination. ⁸C₅ = 8!/(5!3!) = 56.'},
+      {q:'In how many ways can the letters of MANGO be arranged?',opts:['120','60','24','240'],ans:'120',lvl:4,t:40,sol:'5 distinct letters. 5! = 120.'},
+      {q:'In how many ways can 4 men and 3 women be seated in a row so that no two women sit together?',opts:['1440','720','1200','960'],ans:'1440',lvl:5,t:105,sol:'Arrange 4 men: 4! = 24. Creates 5 gaps. Choose 3 gaps: ⁵C₃ = 10. Arrange women: 3! = 6. Total = 24 × 10 × 6 = 1440.'},
+      {q:'How many 3-digit numbers can be formed using digits 1–7 without repetition?',opts:['210','180','240','150'],ans:'210',lvl:3,t:55,sol:'⁷P₃ = 7×6×5 = 210.'},
+      {q:'From a group of 6 men and 4 women, a committee of 3 men and 2 women is formed. How many ways?',opts:['120','100','80','60'],ans:'120',lvl:4,t:70,sol:'Select men: ⁶C₃ = 20. Select women: ⁴C₂ = 6. Total = 20 × 6 = 120.'},
+      {q:'In how many ways can the letters of the word APPLE be arranged so that the vowels always come together?',opts:['24','12','48','36'],ans:'24',lvl:3,t:65,sol:'Treat AE as one block. Then units are [AE], P, P, L: 4 units with P repeated twice, so arrangements = 4!/2! = 12. Inside the vowel block, A and E can be arranged in 2! ways. Total = 12 × 2 = 24.'},
+      {q:'A group of 6 is to be made out of 8 girls and 6 boys. What is the probability that exactly 3 boys are selected?',opts:['1120/3003','56/143','120/3003','20/143'],ans:'1120/3003',lvl:3,t:85,sol:'Total ways to choose 6 people from 14 = 14C6 = 3003. Favorable ways = choose 3 boys from 6 and 3 girls from 8 = 6C3 × 8C3 = 20 × 56 = 1120. Probability = 1120/3003.'},
+      {q:'The sum of three natural numbers a, b and c is 10. How many ordered triplets (a,b,c) exist?',opts:['36','45','28','27'],ans:'36',lvl:5,t:80,sol:'For positive integer solutions of a+b+c=10, use stars and bars: (10−1 C 3−1) = 9C2 = 36.'}
+    ]
+  },
+  {
+    id:'div', title:'Divisibility', priority:2,
+    playbook:'Memorise rules: sum of digits for 3 and 9, last digit for 2 and 5, alternating digit difference for 11, last 2 digits for 4.',
+    trap:'Applying divisibility test for 9 to check divisibility by 3 (it works), but forgetting 3 divides some numbers 9 does not.',
+    questions:[
+      {q:'Is 546 divisible by 3?',opts:['Yes','No'],ans:'Yes',lvl:2,t:30,sol:'Sum of digits = 5+4+6 = 15. 15 is divisible by 3. So 546 is divisible by 3.'},
+      {q:'What is the remainder when 1235 is divided by 7?',opts:['2','3','4','5'],ans:'3',lvl:3,t:50,sol:'1235 = 7 × 176 + 3. Remainder = 3.'},
+      {q:'Is 84,920 divisible by 11?',opts:['Yes','No'],ans:'Yes',lvl:4,t:55,sol:'Alternate sums: (8+9+0)=17 and (4+2)=6. Difference = 11. 11 is divisible by 11, so 84920 is divisible by 11.'},
+      {q:'Find the smallest number that gives remainder 3 when divided by 7 and remainder 2 when divided by 5.',opts:['17','23','12','27'],ans:'17',lvl:4,t:70,sol:'x ≡ 3 (mod 7) and x ≡ 2 (mod 5). Testing: x=17 → 17=7×2+3 ✓ and 17=5×3+2 ✓.'},
+      {q:'How many numbers from 1 to 100 are divisible by both 3 and 5?',opts:['6','7','8','5'],ans:'6',lvl:3,t:55,sol:'Divisible by LCM(3,5)=15: 15,30,45,60,75,90 → 6 numbers.'}
+    ]
+  },
+  {
+    id:'pct', title:'Percentages', priority:1,
+    playbook:'Convert common percentages to fractions to save time: 25%=1/4, 12.5%=1/8, 33.3%=1/3. Successive % changes: multiply factors.',
+    trap:'Adding percentages directly (e.g. 20% up then 20% down ≠ 0 change). Always apply to the new base.',
+    questions:[
+      {q:'A salary increases by 20% then decreases by 20%. What is the net percentage change?',opts:['−4%','0%','4%','−2%'],ans:'−4%',lvl:3,t:60,sol:'Factor = 1.2 × 0.8 = 0.96. Net change = −4%.'},
+      {q:'What is 37.5% of 240?',opts:['90','80','95','85'],ans:'90',lvl:2,t:40,sol:'37.5% = 3/8. 3/8 × 240 = 90.'},
+      {q:'In an election, a candidate gets 45% of votes and loses by 1800 votes. Find total votes.',opts:['18000','16000','20000','15000'],ans:'18000',lvl:4,t:80,sol:'Winner gets 55%, loser 45%. Difference = 10% = 1800 votes → total = 1800/0.10 = 18000.'},
+      {q:'A number is increased by 25% and then decreased by 20%. What is the overall change?',opts:['0%','−5%','5%','−4%'],ans:'0%',lvl:3,t:60,sol:'1.25 × 0.80 = 1.00. No net change.'},
+      {q:'If 20% of A = 30% of B, find A:B.',opts:['3:2','2:3','4:3','3:4'],ans:'3:2',lvl:3,t:65,sol:'0.2A = 0.3B → A/B = 0.3/0.2 = 3/2. A:B = 3:2.'}
+    ]
+  }
+];
+
+const MODULES = [
+  {id:'quant', name:'Quantitative Ability', group:'Technical', color:'#01696f'},
+  {id:'logical', name:'Logical Ability', group:'Non-Technical', color:'#005d8a'},
+  {id:'verbal', name:'Verbal Ability', group:'Non-Technical', color:'#6c32b0'},
+  {id:'coding', name:'Automata / Coding', group:'Technical', color:'#c86400'},
+  {id:'comp', name:'Computer Fundamentals', group:'Technical', color:'#b88700'}
+];
+
+const ST = {
+  topicIdx: 0,
+  qIdx: 0,
+  filteredQs: [],
+  diffFilter: 'all',
+  answered: false,
+  selected: null,
+  startTime: 0,
+  timerInterval: null,
+  log: [],
+  stats: {}
+};
+
+TOPICS.forEach(t => { ST.stats[t.id] = {correct:0, wrong:0, skip:0, totalTime:0, streak:0, bestStreak:0}; });
+
+function gS(id){ return ST.stats[id]; }
+function accuracy(id){ const s=gS(id); const tot=s.correct+s.wrong; return tot?Math.round(s.correct/tot*100):0; }
+function overallAcc(){ const tot=ST.log.filter(l=>l.result!=='skip'); const c=tot.filter(l=>l.result==='correct'); return tot.length?Math.round(c.length/tot.length*100):0; }
+function currentStreak(){ let s=0; for(let i=ST.log.length-1;i>=0;i--){ if(ST.log[i].result==='correct') s++; else break; } return s; }
+function avgTime(){ const a=ST.log.filter(l=>l.result!=='skip'); if(!a.length) return null; return Math.round(a.reduce((s,l)=>s+l.time,0)/a.length); }
+function weakest(){ if(!ST.log.length) return null; return [...TOPICS].sort((a,b)=>accuracy(a.id)-accuracy(b.id))[0]; }
+function currentTopic(){ return TOPICS[ST.topicIdx]; }
+function currentQ(){ return ST.filteredQs[ST.qIdx]; }
+
+function startTimer(){
+  clearInterval(ST.timerInterval);
+  ST.startTime = Date.now();
+  const el = document.getElementById('timerDisplay');
+  ST.timerInterval = setInterval(()=>{
+    const sec = Math.floor((Date.now()-ST.startTime)/1000);
+    const m = String(Math.floor(sec/60)).padStart(2,'0');
+    const s = String(sec%60).padStart(2,'0');
+    el.textContent = `${m}:${s}`;
+    if(sec>currentQ()?.t) el.className='timer-big timer-warn';
+    else el.className='timer-big';
+  }, 1000);
+}
+function stopTimer(){ clearInterval(ST.timerInterval); return Math.max(1, Math.floor((Date.now()-ST.startTime)/1000)); }
+
+function filterQuestions(){
+  const t = currentTopic();
+  if(ST.diffFilter==='all') ST.filteredQs = [...t.questions];
+  else {
+    const lvl = parseInt(ST.diffFilter);
+    ST.filteredQs = t.questions.filter(q=>q.lvl===lvl);
+  }
+  if(!ST.filteredQs.length) ST.filteredQs = [...t.questions];
+  ST.qIdx = 0;
+}
+
+function qs(id){ return document.getElementById(id); }
+function html(id,v){ qs(id).innerHTML=v; }
+
+function renderSidebar(){
+  const topicNav = qs('topicNav');
+  topicNav.innerHTML = TOPICS.map((t,i)=>`
+    <button class="nav-item ${i===ST.topicIdx?'active':''}" onclick="switchTopic(${i})">
+      <span class="nav-dot"></span>
+      <span>${t.title}</span>
+      <span class="nav-count">${t.questions.length}</span>
+    </button>`).join('');
+  const moduleNav = qs('moduleNav');
+  moduleNav.innerHTML = MODULES.map((m)=>`
+    <button class="nav-item">
+      <span class="nav-dot" style="background:${m.color}"></span>
+      <span>${m.name}</span>
+      <span class="nav-count" style="font-size:.65rem">${m.group}</span>
+    </button>`).join('');
+}
+
+function renderKPIs(){
+  const acc = overallAcc();
+  const tot = ST.log.filter(l=>l.result!=='skip').length;
+  const c = ST.log.filter(l=>l.result==='correct').length;
+  qs('kpiAcc').textContent = acc+'%';
+  qs('kpiAccBadge').textContent = tot?`${c}/${tot} correct`:'No attempts yet';
+  qs('kpiAccBadge').className = 'kpi-badge '+(acc>=70?'badge-up':acc>40?'badge-neutral':'badge-down');
+  qs('kpiSolved').textContent = ST.log.length;
+  const at = avgTime(); qs('kpiAvgTime').textContent = at?`Avg ${at}s`:'Avg time –';
+  const cs = currentStreak(); qs('kpiStreak').textContent = cs;
+  const t = currentTopic(); qs('kpiLevel').textContent = `Adaptive L${adaptiveLevel(t.id)}`;
+  const w = weakest();
+  qs('kpiWeak').textContent = w?w.title.split(' ')[0]:'–';
+  qs('kpiWeakSub').textContent = w && ST.log.length?`${w.title} needs work`:'Needs data';
+}
+
+function adaptiveLevel(topicId){
+  const s=gS(topicId);
+  return Math.min(5, Math.max(1, 1+Math.floor((s.correct-s.wrong)/3)));
+}
+
+function renderQuestion(){
+  const t = currentTopic();
+  const q = currentQ();
+  if(!q){ html('qText','<em>No questions match this filter.</em>'); qs('qOptions').innerHTML=''; return; }
+  ST.answered = false;
+  ST.selected = null;
+  qs('submitBtn').disabled = true;
+  qs('solBox').className = 'solution-box';
+  document.getElementById('topbarTitle').textContent = t.title + ' — AMCAT Quant';
+  html('qTopicName', t.title);
+  html('qTopicSub', `${ST.filteredQs.length} questions · ${ST.diffFilter==='all'?'All levels':'Level '+ST.diffFilter}`);
+  html('qCounter', `Q ${ST.qIdx+1} / ${ST.filteredQs.length}`);
+  html('qDiffLabel', `Level ${q.lvl} ${'★'.repeat(q.lvl).slice(0,3)}`);
+  qs('qProgress').style.width = `${((ST.qIdx+1)/ST.filteredQs.length)*100}%`;
+
+  const acc = gS(t.id);
+  const a = acc.correct+acc.wrong;
+  html('qMeta', `
+    <span class="badge badge-type">${t.title}</span>
+    <span class="badge badge-level">Level ${q.lvl}</span>
+    <span class="badge badge-time">⏱ target ${q.t}s</span>
+    <span class="badge badge-mod">Quantitative Ability</span>
+    <span class="badge badge-level">Accuracy ${a?Math.round(acc.correct/a*100):0}%</span>
+  `);
+
+  html('qText', q.q);
+  const letters = ['A','B','C','D'];
+  qs('qOptions').innerHTML = q.opts.map((o,i)=>`
+    <div class="opt" id="opt${i}" data-val="${o}" onclick="selectOpt(this,'${o.replace(/'/g,"\\'")}')">
+      <span class="opt-circle">${letters[i]}</span>
+      <span>${o}</span>
+    </div>`).join('');
+
+  startTimer();
+}
+
+function selectOpt(el, val){
+  if(ST.answered) return;
+  document.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  ST.selected = val;
+  qs('submitBtn').disabled = false;
+}
+
+function submit(){
+  if(ST.answered || !ST.selected) return;
+  ST.answered = true;
+  const t = stopTimer();
+  const q = currentQ();
+  const tid = currentTopic().id;
+  const correct = ST.selected === q.ans;
+  const s = gS(tid);
+
+  document.querySelectorAll('.opt').forEach(o=>{
+    o.classList.add('disabled');
+    if(o.dataset.val === q.ans) o.classList.add('correct');
+    else if(o.dataset.val === ST.selected && !correct) o.classList.add('wrong');
+  });
+
+  if(correct){ s.correct++; s.streak++; s.bestStreak=Math.max(s.bestStreak,s.streak); }
+  else { s.wrong++; s.streak=0; }
+  s.totalTime += t;
+  ST.log.push({topic:currentTopic().title, lvl:q.lvl, result:correct?'correct':'wrong', time:t});
+
+  qs('submitBtn').disabled = true;
+  qs('solBox').className = 'solution-box show';
+  qs('solBox').innerHTML = `<strong>Solution</strong>${q.sol}`;
+  showToast(correct?'✓ Correct!':'✗ Wrong — see solution', correct?'correct':'wrong');
+  renderKPIs(); renderSnapshot(); renderRecent(); buildChart(); renderModuleBars(); renderCoach();
+}
+
+function skipQ(){
+  if(ST.answered) return;
+  stopTimer();
+  const tid = currentTopic().id;
+  const q = currentQ();
+  gS(tid).skip++;
+  gS(tid).streak=0;
+  ST.log.push({topic:currentTopic().title, lvl:q.lvl, result:'skip', time:0});
+  showToast('Question skipped', 'skip');
+  nextQ();
+}
+
+function nextQ(){
+  ST.qIdx = (ST.qIdx+1) % ST.filteredQs.length;
+  renderQuestion(); renderSnapshot(); renderKPIs();
+}
+
+function switchTopic(idx){
+  ST.topicIdx = idx;
+  ST.qIdx = 0;
+  filterQuestions();
+  renderSidebar(); renderQuestion(); renderSnapshot(); renderKPIs();
+  if(window.innerWidth<760) qs('sidebar').classList.remove('open');
+}
+
+function renderSnapshot(){
+  const t = currentTopic();
+  const s = gS(t.id);
+  const tot = s.correct+s.wrong;
+  const avgT = tot?Math.round(s.totalTime/tot):0;
+  html('snapStats',`
+    <div class="snap-row"><span>Attempted</span><span class="snap-val">${tot+s.skip}</span></div>
+    <div class="snap-row"><span>Correct</span><span class="snap-val" style="color:var(--success)">${s.correct}</span></div>
+    <div class="snap-row"><span>Wrong</span><span class="snap-val" style="color:var(--error)">${s.wrong}</span></div>
+    <div class="snap-row"><span>Skipped</span><span class="snap-val" style="color:var(--muted)">${s.skip}</span></div>
+    <div class="snap-row"><span>Best streak</span><span class="snap-val">${s.bestStreak}</span></div>
+    <div class="snap-row"><span>Avg time</span><span class="snap-val">${avgT?avgT+'s':'–'}</span></div>
+    <div class="snap-row"><span>Accuracy</span><span class="snap-val">${accuracy(t.id)}%</span></div>
+  `);
+  html('playbookCard',`<strong>Playbook</strong>${t.playbook}`);
+  html('trapCard',`<strong>⚠ Common trap</strong>${t.trap}`);
+}
+
+function renderRecent(){
+  const rows = ST.log.slice(-12).reverse();
+  html('recentTbody', rows.length?rows.map(r=>`
+    <tr>
+      <td>${r.topic}</td>
+      <td>Level ${r.lvl}</td>
+      <td><span class="${r.result==='correct'?'tag-correct':r.result==='wrong'?'tag-wrong':'tag-skip'}">${r.result==='correct'?'Correct':r.result==='wrong'?'Wrong':'Skipped'}</span></td>
+      <td>${r.time?r.time+'s':'–'}</td>
+    </tr>`).join(''):'<tr><td colspan="4" class="empty-row">No attempts yet — start answering questions!</td></tr>');
+}
+
+let chartInst = null;
+function buildChart(){
+  const labels = TOPICS.map(t=>t.title.split(' ').slice(0,2).join(' '));
+  const data = TOPICS.map(t=>accuracy(t.id));
+  const colors = ['#01696f','#005d8a','#c86400','#6c32b0','#b88700','#3a7318','#a3113a'];
+  const ctx = qs('topicChart').getContext('2d');
+  if(chartInst) chartInst.destroy();
+  chartInst = new Chart(ctx,{
+    type:'bar',
+    data:{labels, datasets:[{label:'Accuracy %',data,backgroundColor:colors.slice(0,TOPICS.length),borderRadius:8,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw}% accuracy`}}},
+      scales:{y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'},grid:{color:'rgba(127,127,127,.1)'}},x:{grid:{display:false},ticks:{font:{size:10}}}}}
+  });
+}
+
+function renderModuleBars(){
+  const qAcc = overallAcc();
+  const mods = [
+    {name:'Quantitative Ability',v:qAcc,color:'#01696f'},
+    {name:'Logical Ability',v:62,color:'#005d8a'},
+    {name:'Verbal Ability',v:71,color:'#6c32b0'},
+    {name:'Automata / Coding',v:55,color:'#c86400'},
+    {name:'Computer Fundamentals',v:66,color:'#b88700'}
+  ];
+  html('moduleBars', mods.map(m=>`
+    <div class="bar-item">
+      <div class="bar-label"><span>${m.name}</span><span style="font-weight:700">${m.v}%</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${m.v}%;background:${m.color}"></div></div>
+    </div>`).join(''));
+}
+
+function renderCoach(){
+  const sorted = [...TOPICS].sort((a,b)=>accuracy(a.id)-accuracy(b.id));
+  html('coachPanel', sorted.map((t,i)=>`
+    <div class="coach-row">
+      <span class="tag">${i===0?'🔴 Priority':'🟡 Track'}</span> ${t.title} —
+      ${accuracy(t.id)}% accuracy ·
+      ${i===0?'Needs focused revision before your mock.':'Maintain current pace.'}
+    </div>`).join(''));
+}
+
+function showToast(msg, type){
+  const t = qs('toast');
+  t.textContent = msg;
+  t.className = `toast toast-${type} show`;
+  setTimeout(()=>{ t.classList.remove('show'); }, 2000);
+}
+
+document.querySelectorAll('[data-diff]').forEach(chip=>{
+  chip.addEventListener('click',()=>{
+    document.querySelectorAll('[data-diff]').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    ST.diffFilter = chip.dataset.diff;
+    filterQuestions(); renderQuestion(); renderSnapshot();
+  });
+});
+
+qs('submitBtn').addEventListener('click', submit);
+qs('solBtn').addEventListener('click',()=>{
+  const b=qs('solBox');
+  const q=currentQ();
+  if(!b.classList.contains('show')){
+    b.innerHTML=`<strong>Solution</strong>${q.sol}`;
+    b.classList.add('show');
+  } else b.classList.remove('show');
+});
+qs('skipBtn').addEventListener('click', skipQ);
+qs('nextBtn').addEventListener('click', nextQ);
+qs('nextTopicBtn').addEventListener('click',()=>switchTopic((ST.topicIdx+1)%TOPICS.length));
+qs('resetBtn').addEventListener('click',()=>{
+  TOPICS.forEach(t=>{ ST.stats[t.id]={correct:0,wrong:0,skip:0,totalTime:0,streak:0,bestStreak:0}; });
+  ST.log=[];
+  filterQuestions();
+  renderAll();
+  showToast('Analytics reset','skip');
+});
+qs('themeBtn').addEventListener('click',()=>{
+  const h=document.documentElement;
+  const next=h.getAttribute('data-theme')==='dark'?'light':'dark';
+  h.setAttribute('data-theme',next);
+  qs('themeBtn').textContent=next==='dark'?'☀️':'🌙';
+});
+qs('mobMenu').addEventListener('click',()=>qs('sidebar').classList.toggle('open'));
+
+document.addEventListener('keydown',e=>{
+  if(document.activeElement.tagName==='INPUT') return;
+  if(e.key==='Enter') submit();
+  if(e.key.toLowerCase()==='n') nextQ();
+  if(e.key.toLowerCase()==='s') qs('solBtn').click();
+  if(e.key==='1') { const o=qs('opt0'); if(o) selectOpt(o, o.dataset.val); }
+  if(e.key==='2') { const o=qs('opt1'); if(o) selectOpt(o, o.dataset.val); }
+  if(e.key==='3') { const o=qs('opt2'); if(o) selectOpt(o, o.dataset.val); }
+  if(e.key==='4') { const o=qs('opt3'); if(o) selectOpt(o, o.dataset.val); }
+});
+
+function renderAll(){
+  renderSidebar();
+  filterQuestions();
+  renderQuestion();
+  renderSnapshot();
+  renderKPIs();
+  renderRecent();
+  buildChart();
+  renderModuleBars();
+  renderCoach();
+}
+
+renderAll();
+</script>
+</body>
+</html>
