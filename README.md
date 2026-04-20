@@ -23,7 +23,7 @@ Hosted a static website on AWS EC2 using Apache (httpd) web server on Amazon Lin
 ![User 1](screenshots/user1-unauthorized.png)
 
 ### User 2 Login - EC2 Access
-![User 2](screenshots/user2-access.png)
+![User 2](Screenshot 2026-04-20 114458.png)
 
 ## 👥 IAM Users
 - **user1-no-access** → No permissions (cannot view EC2 instances)
