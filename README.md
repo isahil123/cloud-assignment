@@ -15,16 +15,16 @@ Hosted a static website on AWS EC2 using Apache (httpd) web server on Amazon Lin
 - Elastic IP
 
 ## 📸 Screenshots
+## 📸 Screenshots
 
 ### EC2 Instance (AWS Console)
-![EC2 Instance](screenshots/ec2-instance.png)
+![EC2 Instance](Screenshot 2026-04-20 114622.png)
 
 ### User 1 Login - No Permissions
-![User 1](screenshots/user1-unauthorized.png)
+![User 1](Screenshot 2026-04-20 114458.png)
 
 ### User 2 Login - EC2 Access
-![User 2](Screenshot 2026-04-20 114458.png)
-
+![User 2](Screenshot 2026-04-20 114506.png)
 ## 👥 IAM Users
 - **user1-no-access** → No permissions (cannot view EC2 instances)
 - **user2-ec2-access** → AmazonEC2FullAccess policy attached
